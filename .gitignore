@@ -1,0 +1,11 @@
+# Compiled binaries
+/app
+*.exe
+*.out
+
+# OS / editor junk
+.DS_Store
+
+# Go build/test artifacts
+*.test
+*.prof
