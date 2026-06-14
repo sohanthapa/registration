@@ -24,6 +24,7 @@ const (
 	defaultAddr        = ":8080"
 )
 
+// main starts the HTTP server and wires up dependencies.
 func main() {
 	ctx := context.Background()
 
@@ -71,6 +72,7 @@ func main() {
 	}
 }
 
+// healthHandler returns a simple liveness check.
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
@@ -83,6 +85,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"status":"ok"}`))
 }
 
+// logRequests logs each incoming request before passing it along.
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s", r.Method, r.URL.Path)

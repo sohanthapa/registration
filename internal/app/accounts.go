@@ -9,6 +9,7 @@ import (
 	"github.com/example/registration/internal/domain"
 )
 
+// using a basic email regex check
 var emailRegex = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 
 type Service struct {
@@ -17,6 +18,7 @@ type Service struct {
 	tokens    TokenIssuer
 }
 
+// NewService wires up the account service with its dependencies.
 func NewService(
 	users UserRepository,
 	passwords PasswordHasher,
@@ -44,10 +46,12 @@ type ValidationError struct {
 	Message string
 }
 
+// Error returns the validation message.
 func (e *ValidationError) Error() string {
 	return e.Message
 }
 
+// SignUp validates input, hashes the password, and creates a new user.
 func (s *Service) SignUp(ctx context.Context, input Credentials) (domain.User, error) {
 	email := normalizeEmail(input.Email)
 
@@ -62,6 +66,8 @@ func (s *Service) SignUp(ctx context.Context, input Credentials) (domain.User, e
 		return domain.User{}, err
 	}
 
+	// NOTE: depending on how much CPU time is consumed during hashing, we could optimize and check if the email exists 
+	// 		first before hashing since hashing a bit expensive operation.
 	passwordHash, err := s.passwords.Hash(ctx, input.Password)
 	if err != nil {
 		return domain.User{}, err
@@ -75,6 +81,7 @@ func (s *Service) SignUp(ctx context.Context, input Credentials) (domain.User, e
 	return user, nil
 }
 
+// SignIn checks credentials and returns a token for a valid user.
 func (s *Service) SignIn(ctx context.Context, input Credentials) (SignInResult, error) {
 	email := normalizeEmail(input.Email)
 
@@ -107,10 +114,12 @@ func (s *Service) SignIn(ctx context.Context, input Credentials) (SignInResult, 
 	}, nil
 }
 
+// normalizeEmail trims whitespace and lowercases the email.
 func normalizeEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
 }
 
+// isValidEmail checks basic email format and length.
 func isValidEmail(email string) bool {
 	if len(email) == 0 || len(email) > 254 {
 		return false
@@ -119,7 +128,9 @@ func isValidEmail(email string) bool {
 	return emailRegex.MatchString(email)
 }
 
+// validatePassword enforces password length rules.
 func validatePassword(password string) error {
+	// NOTE for the reviewer: we can add other password validation check here
 	switch {
 	case password == "":
 		return &ValidationError{

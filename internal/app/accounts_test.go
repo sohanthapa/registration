@@ -9,6 +9,7 @@ import (
 	"github.com/example/registration/internal/domain"
 )
 
+// TestSignUpCreatesUserWithNormalizedEmailAndHashedPassword checks signup stores a normalized email and hashed password.
 func TestSignUpCreatesUserWithNormalizedEmailAndHashedPassword(t *testing.T) {
 	repo := newFakeUserRepository()
 	service := NewService(repo, fakePasswordHasher{}, fakeTokenIssuer{})
@@ -31,6 +32,7 @@ func TestSignUpCreatesUserWithNormalizedEmailAndHashedPassword(t *testing.T) {
 	}
 }
 
+// TestSignUpRejectsDuplicateEmail checks signup fails when the email is already taken.
 func TestSignUpRejectsDuplicateEmail(t *testing.T) {
 	repo := newFakeUserRepository()
 	service := NewService(repo, fakePasswordHasher{}, fakeTokenIssuer{})
@@ -52,6 +54,7 @@ func TestSignUpRejectsDuplicateEmail(t *testing.T) {
 	}
 }
 
+// TestSignInReturnsTokenForValidCredentials checks login returns a token on success.
 func TestSignInReturnsTokenForValidCredentials(t *testing.T) {
 	repo := newFakeUserRepository()
 	service := NewService(repo, fakePasswordHasher{}, fakeTokenIssuer{})
@@ -77,6 +80,7 @@ func TestSignInReturnsTokenForValidCredentials(t *testing.T) {
 	}
 }
 
+// TestSignInRejectsInvalidPassword checks login fails with a wrong password.
 func TestSignInRejectsInvalidPassword(t *testing.T) {
 	repo := newFakeUserRepository()
 	service := NewService(repo, fakePasswordHasher{}, fakeTokenIssuer{})
@@ -103,6 +107,7 @@ type fakeUserRepository struct {
 	nextID       int
 }
 
+// newFakeUserRepository creates an in-memory user store for tests.
 func newFakeUserRepository() *fakeUserRepository {
 	return &fakeUserRepository{
 		usersByEmail: make(map[string]domain.User),
@@ -110,6 +115,7 @@ func newFakeUserRepository() *fakeUserRepository {
 	}
 }
 
+// Create stores a user in memory and rejects duplicate emails.
 func (r *fakeUserRepository) Create(ctx context.Context, email string, passwordHash string) (domain.User, error) {
 	if _, exists := r.usersByEmail[email]; exists {
 		return domain.User{}, domain.ErrUserAlreadyExists
@@ -128,6 +134,7 @@ func (r *fakeUserRepository) Create(ctx context.Context, email string, passwordH
 	return user, nil
 }
 
+// FindByEmail looks up a user by email in memory.
 func (r *fakeUserRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
 	user, exists := r.usersByEmail[email]
 	if !exists {
@@ -139,16 +146,19 @@ func (r *fakeUserRepository) FindByEmail(ctx context.Context, email string) (dom
 
 type fakePasswordHasher struct{}
 
+// Hash returns a predictable fake hash for tests.
 func (fakePasswordHasher) Hash(ctx context.Context, password string) (string, error) {
 	return "hash:" + password, nil
 }
 
+// Compare checks against the fake hash format used in tests.
 func (fakePasswordHasher) Compare(passwordHash string, plainPassword string) bool {
 	return passwordHash == "hash:"+plainPassword
 }
 
 type fakeTokenIssuer struct{}
 
+// Issue returns a fixed test token.
 func (fakeTokenIssuer) Issue(ctx context.Context, user domain.User) (Token, error) {
 	expiresAt := time.Now().UTC().Add(time.Hour)
 

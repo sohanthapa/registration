@@ -19,6 +19,7 @@ type Handler struct {
 	service *app.Service
 }
 
+// Register mounts the auth routes on the mux.
 func Register(mux *http.ServeMux, service *app.Service) {
 	handler := &Handler{
 		service: service,
@@ -47,6 +48,7 @@ type loginResponse struct {
 	User        userResponse `json:"user"`
 }
 
+// signUp handles POST /signup.
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w, http.MethodPost)
@@ -72,6 +74,7 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// login handles POST /login.
 func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w, http.MethodPost)
@@ -101,6 +104,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// handleAuthError maps service errors to HTTP responses.
 func handleAuthError(w http.ResponseWriter, err error) {
 	var validationErr *app.ValidationError
 
@@ -120,6 +124,7 @@ func handleAuthError(w http.ResponseWriter, err error) {
 	}
 }
 
+// toUserResponse strips sensitive fields before sending a user to the client.
 func toUserResponse(user domain.User) userResponse {
 	return userResponse{
 		ID:        user.ID,
@@ -128,6 +133,7 @@ func toUserResponse(user domain.User) userResponse {
 	}
 }
 
+// readJSON decodes a single JSON object from the request body.
 func readJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 
@@ -147,6 +153,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 	return true
 }
 
+// writeJSON writes a JSON response with the given status code.
 func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -156,12 +163,14 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 	}
 }
 
+// errorJSON writes a JSON error response.
 func errorJSON(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, map[string]string{
 		"error": message,
 	})
 }
 
+// methodNotAllowed returns 405 with the allowed methods.
 func methodNotAllowed(w http.ResponseWriter, allowedMethods ...string) {
 	w.Header().Set("Allow", strings.Join(allowedMethods, ", "))
 	errorJSON(w, http.StatusMethodNotAllowed, "method not allowed")

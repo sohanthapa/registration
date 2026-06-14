@@ -13,6 +13,7 @@ type BcryptHasher struct {
 	slots chan struct{}
 }
 
+// NewBcryptHasher creates a hasher with a concurrency cap on bcrypt work.
 func NewBcryptHasher() *BcryptHasher {
 
 	// TODO:  we can make this configurable when adding in real production env.
@@ -24,10 +25,11 @@ func NewBcryptHasher() *BcryptHasher {
 	}
 }
 
+// Hash bcrypt-hashes a password, waiting for a free slot if needed.
 func (h *BcryptHasher) Hash(ctx context.Context, password string) (string, error) {
 
 	// Wait briefly for a bcrypt slot; if none is free before the timeout, fail fast instead of waiting forever.
-	// TODO: we can make this timeout configurable when putting it real production env.
+	// TODO: we can make this timeout configurable via yaml file when putting it in production.
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
 	defer cancel()
 
@@ -51,6 +53,7 @@ func (h *BcryptHasher) Hash(ctx context.Context, password string) (string, error
 	return string(hashedPassword), nil
 }
 
+// Compare checks a plain password against a bcrypt hash.
 func (h *BcryptHasher) Compare(passwordHash string, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword(
 		[]byte(passwordHash),

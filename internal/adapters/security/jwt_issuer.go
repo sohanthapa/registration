@@ -16,6 +16,7 @@ type JWTIssuer struct {
 	ttl    time.Duration
 }
 
+// NewJWTIssuer creates a JWT token issuer with the given secret and TTL.
 func NewJWTIssuer(secret string, issuer string, ttl time.Duration) *JWTIssuer {
 	return &JWTIssuer{
 		secret: []byte(secret),
@@ -29,6 +30,7 @@ type accessTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
+// Issue signs a JWT access token for the given user.
 func (j *JWTIssuer) Issue(ctx context.Context, user domain.User) (app.Token, error) {
 	if err := ctx.Err(); err != nil {
 		return app.Token{}, err

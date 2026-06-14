@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: onion-auth-postgres
+    container_name: registration-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

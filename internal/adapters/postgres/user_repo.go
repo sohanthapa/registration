@@ -14,12 +14,14 @@ type UserRepository struct {
 	db *pgxpool.Pool
 }
 
+// NewUserRepository creates a Postgres-backed user store.
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
+// Create inserts a user and returns ErrUserAlreadyExists on duplicate email.
 func (r *UserRepository) Create(
 	ctx context.Context,
 	email string,
@@ -53,6 +55,7 @@ func (r *UserRepository) Create(
 	return user, nil
 }
 
+// FindByEmail loads a user by email.
 func (r *UserRepository) FindByEmail(
 	ctx context.Context,
 	email string,

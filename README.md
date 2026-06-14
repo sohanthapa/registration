@@ -14,12 +14,12 @@ It supports:
 ## Architecture
 
 ```text
-cmd/api/main.go                 composition root / dependency wiring
+cmd/app/main.go                 composition root / dependency wiring
 
 internal/domain                 pure domain models and domain errors
-internal/app/auth               use cases and ports/interfaces
-internal/infra/postgres         Postgres adapter for user persistence
-internal/infra/security         bcrypt and JWT adapters
+internal/app                    use cases and ports/interfaces
+internal/adapters/postgres      Postgres adapter for user persistence
+internal/adapters/security      bcrypt and JWT adapters
 internal/transport/http         HTTP handlers and request/response mapping
 ```
 
@@ -27,7 +27,7 @@ Dependency direction:
 
 ```text
 HTTP transport  --->  application service  --->  domain
-Infrastructure  --->  application ports    --->  domain
+Adapters        --->  application ports    --->  domain
 ```
 
 The application service owns the sign-up and login flows. HTTP, Postgres, bcrypt, and JWT are adapters around it.
@@ -39,12 +39,6 @@ The application service owns the sign-up and login flows. HTTP, Postgres, bcrypt
 - PostgreSQL, if not using Docker
 
 ## Setup
-
-Copy the environment file:
-
-```bash
-cp .env.example .env
-```
 
 Load the values into your shell:
 
@@ -65,7 +59,7 @@ The migration runs automatically when the Docker volume is first created because
 If you are using an existing database, run the migration manually:
 
 ```bash
-psql "$DATABASE_URL" -f migrations/001_create_users.sql
+psql "$DATABASE_URL" -f internal/adapters/postgres/migrations/001_create_users.sql
 ```
 
 Install dependencies:
@@ -77,7 +71,7 @@ go mod tidy
 Run the API:
 
 ```bash
-go run ./cmd/api
+go run ./cmd/app
 ```
 
 Or use Make:
@@ -161,42 +155,3 @@ Response:
 - Login returns the same error message for missing users and incorrect passwords.
 - For production, add TLS, refresh tokens or server-side sessions, rate limiting, audit logging, email verification, account lockout policies, and stronger secret management.
 - Bcrypt has a 72-byte password input limit, so the application validates that before hashing.
-
-## Layer responsibilities
-
-### Domain
-
-Contains pure concepts:
-
-- `User`
-- domain-level errors
-
-### Application
-
-Contains use cases:
-
-- `SignUp`
-- `SignIn`
-
-Defines ports:
-
-- `UserRepository`
-- `PasswordHasher`
-- `TokenIssuer`
-
-### Infrastructure
-
-Implements ports:
-
-- Postgres user repository
-- bcrypt password hasher
-- JWT issuer
-
-### Transport
-
-Handles HTTP only:
-
-- JSON decoding
-- calling the auth service
-- error-to-status-code mapping
-- JSON responses

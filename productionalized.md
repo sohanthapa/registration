@@ -1,8 +1,57 @@
-1. Development and testing
-2. Database
-    add migration up and down and run it via go migrate
-2. Deployment
-3. Traceability
-4. Scalability and Reliability
-    For production-level registration bursts, you would still want rate limiting, request timeouts, metrics, and maybe per-IP/email throttling.
-     (done rate limiting when creating coupons)
+# Productionalization
+
+A checklist of items to consider when taking this service to production.
+
+*NOTE*: The sections/steps below are to the best of my knowledge. I'm open to more ideas or feedback from the team if something doesn't look right, something is missing, or there are better approaches.
+
+## Development and Testing
+
+- Seeding test data, in lower env, for easier testing.
+- Add integration tests: Our unit tests rely on mocks, so they check pieces in isolation but never exercise the real flow. Integration tests run the actual pieces together - a real request through the API down to a real database - e.g. duplicate emails are rejected, passwords are stored hashed, wrong passwords fail).
+- Add more unit tests if necessary.
+
+## Database
+
+- add migration up and down and run it via go migrate tool.
+
+## Deployment
+
+- Configure CI/CD pipelines
+  - Every PR gets checked with lint, unit, and integration tests. When code merges to main, we build one Docker image tagged with the git SHA and push it. We deploy that same image to staging first, then to production via Helm.
+  - Make prod deployment manual approval (after testing in lower envs).
+  - Also, have a rollback pipeline setup to quickly revert if something breaks in production environment
+- Configure slack notifiers after each deployment for each service.
+
+## Observability and Traceability
+
+- enable GC profiling in Datadog (or any other observability tool) so we can monitor OOM, CPU usage/time, deployment comparisons.
+- enable Database monitoring for tracking availability, query performance, and resource usage.
+- Setup Database monitors, synthetic tests 
+
+## Scalability and Reliability
+
+- For production-level registration bursts, we could add rate limiting, request timeouts, metrics, logs.
+  - example: I have added rate limiting when creating thousands of coupons.
+- Tune the pgx pool: set `max_open_conn`/`max_idle_conns`.
+  - max_open_conn (max open connections) protects our database from being overwhelmed and prevents service opening unlimited connections.
+  - max_idle_conn (max idle connections) helps reuse warm connection instead of spinning a new connection for every request.
+  - From my development experience, sweet configuration has been to keep the same value for both i.e., max_open_conn = max_idle_conn
+- Add per-IP and per-email throttling on `/signup` and `/login`, with load shedding (return HTTP 429) when bursts exceed capacity.
+- Run more copies/replicas of the service when traffic is high. Kubernetes can add or remove copies automatically based on CPU usage.
+  - Helm-style configuration block that controls **autoscaling** — how Kubernetes automatically adds or removes copies (pods) of our service based on load.
+    - minReplicas/maxReplicas
+  - We can use `kubectl get pods -o wide` command to check how many pods are currently deployed for our service.
+- Adding secrets folder to store password and other credentials (we can use sops tool for encrypt and decrypting the secret file)
+
+## Caching and Performance
+
+- Prevent Cache stampede (example: implement SingleFlight logic) 
+  - I have experienced this in our prod env in the past.
+- bcrypt cost/CPU: revisit the existing note in `internal/app/accounts.go` about checking email existence before hashing, and tune the bcrypt cost vs. throughput.
+- Runtime tuning under burst: consider a `GOGC` override like pos-discounts (`debug.SetGCPercent(300)`) once profiling shows GC pressure (ties into the GC profiling note in Observability).
+
+## AI Agents Setup
+
+- Add an `AGENTS.md` file at the repo root that tells AI agents how to work in this repo: how to build, run, and test the service, the project layout, and any conventions to follow. This keeps agents consistent and saves us from re-explaining the same things.
+- Add an ignore file (like `.cursorignore`) to list files and folders agents should leave alone, such as secrets, generated code and database credentials. This keeps agents away from sensitive or risky files.
+
