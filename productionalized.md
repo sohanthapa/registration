@@ -4,6 +4,12 @@ A checklist of items to consider when taking this service to production.
 
 *NOTE*: The sections/steps below are to the best of my knowledge. I'm open to more ideas or feedback from the team if something doesn't look right, something is missing, or there are better approaches.
 
+## Git Branch Setup
+
+- Enforce a feature-branch workflow: all work happens on a branch off `main`, and direct pushes/commits to `main` are blocked via branch protection. Changes land through a pull request.
+- Require at least one approving review on every PR before it can be merged into `main` (stale approvals dismissed on new commits).
+- Require all status checks (lint, unit, and integration tests) to pass, and the branch to be up to date with `main`, before merging.
+
 ## Development and Testing
 
 - Seeding test data, in lower env, for easier testing.
@@ -60,7 +66,7 @@ A checklist of items to consider when taking this service to production.
 
 ## Authentication and Security
 
-Please refer to `registration/docs/cursorlog/auth_security_section_e2c3d8ee.plan.md` doc for more info on this. [](http://e2c3d8ee.plan.md)
+Please refer to `registration/docs/cursorlog/auth_security_section_e2c3d8ee.plan.md` doc for more info on this. 
 
 ## AI Agents Setup
 
