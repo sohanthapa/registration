@@ -13,6 +13,8 @@ A checklist of items to consider when taking this service to production.
 ## Database
 
 - add migration up and down and run it via go migrate tool.
+- Always do any database upgrade/maintenance or big migration during off hours. Always do it in lower env first to ensure it does not break the existing config.
+  - Learned from my past mistake: I have learned this from my past experience, once i gave approval to do database config change in prd during low peak traffic hours and we saw a huge error/latency for few mins (error not connecting to database)
 
 ## Deployment
 
@@ -26,7 +28,7 @@ A checklist of items to consider when taking this service to production.
 
 - enable GC profiling in Datadog (or any other observability tool) so we can monitor OOM, CPU usage/time, deployment comparisons.
 - enable Database monitoring for tracking availability, query performance, and resource usage.
-- Setup Database monitors, synthetic tests 
+- Setup Database monitors, synthetic tests
 
 ## Scalability and Reliability
 
@@ -45,13 +47,28 @@ A checklist of items to consider when taking this service to production.
 
 ## Caching and Performance
 
-- Prevent Cache stampede (example: implement SingleFlight logic) 
+- If implementing cache (such as redis) we need to consider to prevent Cache stampede (example: implement SingleFlight logic) 
   - I have experienced this in our prod env in the past.
 - bcrypt cost/CPU: revisit the existing note in `internal/app/accounts.go` about checking email existence before hashing, and tune the bcrypt cost vs. throughput.
-- Runtime tuning under burst: consider a `GOGC` override like pos-discounts (`debug.SetGCPercent(300)`) once profiling shows GC pressure (ties into the GC profiling note in Observability).
+
+
+
+## Internal Tools
+
+- We can build service to service testing tool for engineers to test in lower env.
+  - If we need to test in prd env, we can add `dry_run` feature in our gRPC. When `dry_run` is enabled, we need to ensure we do not have any side effects (like manipulating database, triggering any events/metrics etc)
+- Admin tool for non-eng stakeholders or operations team to manage customer issues.
+  - example: lookup customer's account via email, force password reset, soft-delete an account. (some of these features are not implemented but just noting down some ideas on how we can leverage the admin tool)
+
+### Admin panel features
+
+### Authentication
 
 ## AI Agents Setup
 
 - Add an `AGENTS.md` file at the repo root that tells AI agents how to work in this repo: how to build, run, and test the service, the project layout, and any conventions to follow. This keeps agents consistent and saves us from re-explaining the same things.
 - Add an ignore file (like `.cursorignore`) to list files and folders agents should leave alone, such as secrets, generated code and database credentials. This keeps agents away from sensitive or risky files.
+- Create an AI agent to help during on-call issues
+  - helping writing/updating the runbooks.
+  - triage any on-call issue by helping figure out root cause and suggest possible solution.
 

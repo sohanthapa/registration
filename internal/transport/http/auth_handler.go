@@ -138,7 +138,8 @@ func readJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 
 	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
+	// prevents unknown field type to be passed besides the one we have mentioned in our json
+	decoder.DisallowUnknownFields() 
 
 	if err := decoder.Decode(dst); err != nil {
 		errorJSON(w, http.StatusBadRequest, "invalid JSON body")
@@ -172,6 +173,9 @@ func errorJSON(w http.ResponseWriter, status int, message string) {
 
 // methodNotAllowed returns 405 with the allowed methods.
 func methodNotAllowed(w http.ResponseWriter, allowedMethods ...string) {
+	// RFC-9110 states "The origin server MUST generate an Allow header field in a 405 response 
+	// 					containing a list of the target resource's currently supported methods"
+	// https://www.rfc-editor.org/info/rfc9110/#name-405-method-not-allowed
 	w.Header().Set("Allow", strings.Join(allowedMethods, ", "))
 	errorJSON(w, http.StatusMethodNotAllowed, "method not allowed")
 }
