@@ -51,8 +51,6 @@ A checklist of items to consider when taking this service to production.
   - I have experienced this in our prod env in the past.
 - bcrypt cost/CPU: revisit the existing note in `internal/app/accounts.go` about checking email existence before hashing, and tune the bcrypt cost vs. throughput.
 
-
-
 ## Internal Tools
 
 - We can build service to service testing tool for engineers to test in lower env.
@@ -60,9 +58,9 @@ A checklist of items to consider when taking this service to production.
 - Admin tool for non-eng stakeholders or operations team to manage customer issues.
   - example: lookup customer's account via email, force password reset, soft-delete an account. (some of these features are not implemented but just noting down some ideas on how we can leverage the admin tool)
 
-### Admin panel features
+## Authentication and Security
 
-### Authentication
+Please refer to `registration/docs/cursorlog/auth_security_section_e2c3d8ee.plan.md` doc for more info on this. [](http://e2c3d8ee.plan.md)
 
 ## AI Agents Setup
 
