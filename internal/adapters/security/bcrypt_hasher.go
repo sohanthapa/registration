@@ -16,7 +16,7 @@ type BcryptHasher struct {
 // NewBcryptHasher creates a hasher with a concurrency cap on bcrypt work.
 func NewBcryptHasher() *BcryptHasher {
 
-	// TODO:  we can make this configurable when adding in real production env.
+	// TODO:  we can make this configurable (via yaml file) when adding in real production env.
 	maxConcurrency := 4
 
 	return &BcryptHasher{

@@ -34,7 +34,9 @@ A checklist of items to consider when taking this service to production.
 
 - enable GC profiling in Datadog (or any other observability tool) so we can monitor OOM, CPU usage/time, deployment comparisons.
 - enable Database monitoring for tracking availability, query performance, and resource usage.
-- Setup Database monitors, synthetic tests
+  - we can monitor p99, p95 latencies to ensure we are not seeing abnormal spikes.
+    - From my personal experience: if using aws rds, we can also use CloudWatch to monitor CPU usage for each database connection/replicas.
+- Setup Database monitors, synthetic tests.
 
 ## Scalability and Reliability
 
@@ -43,11 +45,12 @@ A checklist of items to consider when taking this service to production.
 - Tune the pgx pool: set `max_open_conn`/`max_idle_conns`.
   - max_open_conn (max open connections) protects our database from being overwhelmed and prevents service opening unlimited connections.
   - max_idle_conn (max idle connections) helps reuse warm connection instead of spinning a new connection for every request.
-  - From my development experience, sweet configuration has been to keep the same value for both i.e., max_open_conn = max_idle_conn
-- Add per-IP and per-email throttling on `/signup` and `/login`, with load shedding (return HTTP 429) when bursts exceed capacity.
-- Run more copies/replicas of the service when traffic is high. Kubernetes can add or remove copies automatically based on CPU usage.
-  - Helm-style configuration block that controls **autoscaling** — how Kubernetes automatically adds or removes copies (pods) of our service based on load.
-    - minReplicas/maxReplicas
+    - From my development experience, sweet configuration has been to keep the same value for both i.e., max_open_conn = max_idle_conn
+- Add per-IP and per-email throttling/rate-limiting on `/signup` and `/login`, with load shedding (return HTTP 429) when bursts exceed capacity.
+  - example: max 5 login attempts per minute for `user@example.com`, max 10 signups per minute from one IP.
+- Horizontal scaling via Kubernetes - Run more copies/replicas of the service when traffic is high. Kubernetes can add or remove copies automatically based on CPU usage.
+  - We can use Helm-style configuration that controls **autoscaling (via using variables like**  minReplicas/maxReplicas) — how Kubernetes automatically adds or removes copies (pods) of our service based on load.
+    - NOTE: we can use other names besides minReplicas/maxReplicas - these are the names I am familiar with and haved used in microservices.
   - We can use `kubectl get pods -o wide` command to check how many pods are currently deployed for our service.
 - Adding secrets folder to store password and other credentials (we can use sops tool for encrypt and decrypting the secret file)
 
@@ -55,7 +58,7 @@ A checklist of items to consider when taking this service to production.
 
 - If implementing cache (such as redis) we need to consider to prevent Cache stampede (example: implement SingleFlight logic) 
   - I have experienced this in our prod env in the past.
-- bcrypt cost/CPU: revisit the existing note in `internal/app/accounts.go` about checking email existence before hashing, and tune the bcrypt cost vs. throughput.
+- bcrypt cost/CPU: revisit the existing note in `internal/app/`GC profiling`accounts.go` about checking email existence before hashing, and tune the bcrypt cost vs. throughput.
 
 ## Internal Tools
 
@@ -67,6 +70,14 @@ A checklist of items to consider when taking this service to production.
 ## Authentication and Security
 
 Please refer to `registration/docs/cursorlog/auth_security_section_e2c3d8ee.plan.md` doc for more info on this. 
+
+
+
+## On-call incidents & Public Facing API
+
+- Setup on-call escaltion policies via Pagerduty so we get alerts for any critical issue and eng can act upon it fast.
+  - Always do a thorough post-mortem and act upon the action items.
+- A status page to indicate if something failed in our service and root cause analysis so our customers are aware of any on-going issue.
 
 ## AI Agents Setup
 

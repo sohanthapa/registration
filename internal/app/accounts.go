@@ -9,7 +9,7 @@ import (
 	"github.com/example/registration/internal/domain"
 )
 
-// using a basic email regex check
+// using a basic email regex check for simplicity
 var emailRegex = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 
 type Service struct {
@@ -67,7 +67,7 @@ func (s *Service) SignUp(ctx context.Context, input Credentials) (domain.User, e
 	}
 
 	// NOTE: depending on how much CPU time is consumed during hashing, we could optimize and check if the email exists 
-	// 		first before hashing since hashing a bit expensive operation.
+	// 		first before hashing since hashing is a bit expensive operation.
 	passwordHash, err := s.passwords.Hash(ctx, input.Password)
 	if err != nil {
 		return domain.User{}, err

@@ -148,10 +148,7 @@ Response:
 }
 ```
 
-## Notes
+## AI docs
 
-- The raw password is never stored.
-- The database stores only `password_hash`.
-- Login returns the same error message for missing users and incorrect passwords.
-- For production, add TLS, refresh tokens or server-side sessions, rate limiting, audit logging, email verification, account lockout policies, and stronger secret management.
-- Bcrypt has a 72-byte password input limit, so the application validates that before hashing.
+Plans and logs from AI-assisted work can be found under `docs/cursorlog`.
+
