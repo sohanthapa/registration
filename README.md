@@ -1,15 +1,12 @@
-# Onion Architecture Auth Backend in Go
+# Registration service
 
-Backend-only email/password auth example using onion architecture.
-
-It supports:
+A simple registration service which supports:
 
 - `POST /signup`
 - `POST /login`
 - password hashing with bcrypt
 - JWT access token issuance
 - PostgreSQL persistence
-- separation between domain, application, infrastructure, and HTTP transport layers
 
 ## Architecture
 
@@ -23,12 +20,7 @@ internal/adapters/security      bcrypt and JWT adapters
 internal/transport/http         HTTP handlers and request/response mapping
 ```
 
-Dependency direction:
 
-```text
-HTTP transport  --->  application service  --->  domain
-Adapters        --->  application ports    --->  domain
-```
 
 The application service owns the sign-up and login flows. HTTP, Postgres, bcrypt, and JWT are adapters around it.
 
@@ -151,4 +143,3 @@ Response:
 ## AI docs
 
 Plans and logs from AI-assisted work can be found under `docs/cursorlog`.
-
