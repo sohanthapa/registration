@@ -20,8 +20,6 @@ internal/adapters/security      bcrypt and JWT adapters
 internal/transport/http         HTTP handlers and request/response mapping
 ```
 
-
-
 The application service owns the sign-up and login flows. HTTP, Postgres, bcrypt, and JWT are adapters around it.
 
 ## Requirements
@@ -143,3 +141,8 @@ Response:
 ## AI docs
 
 Plans and logs from AI-assisted work can be found under `docs/cursorlog`.
+
+## Production Deployment Guide
+
+Guidelines to follow if we want to productionalize this service can be found in docs/productionalized.md file
+
