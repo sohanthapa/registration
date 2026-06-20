@@ -144,5 +144,5 @@ Plans and logs from AI-assisted work can be found under `docs/cursorlog`.
 
 ## Production Deployment Guide
 
-Guidelines to follow if we want to productionalize this service can be found in docs/productionalized.md file
+Guidelines to follow if we want to productionalize this service can be found in docs/productionalized.md file.
 
